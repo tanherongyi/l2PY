@@ -1,0 +1,52 @@
+{% extends "admin/base.html" %}
+
+{% block css %}
+{{ super() }}
+<link href="{{ url_for('static', filename='css/wangEditor.min.css') }}" rel="stylesheet" type="text/css">
+{% endblock %}
+
+{% block sidebar %}
+<li><a href="{{ url_for('.index') }}">概况</a></li>
+<li class="active"><a href="{{ url_for('.article') }}">文章</a></li>
+<li><a href="{{ url_for('.category') }}">文章分类</a></li>
+<li><a href="{{ url_for('.user') }}">用户</a></li>
+{% endblock %}
+
+{% block main %}
+<h3>发布文章</h3>
+<form method="post">
+	<div class="form-group">
+		<label for="article_category">文章分类</label>
+		<select class="form-control" id="article_category" name="category">
+			{% for category in categorys %}
+			<option value={{ category.id }} {% if article.category.id==category.id %} selected="selected" {% endif %}>{{ category.name }}</option>
+			{% endfor %}
+		</select>
+	</div>
+	<div class="form-group">
+		<label for="article_title">文章标题</label>
+		<input type="text" class="form-control" id="article_title" name="title" value={{ article.title }}>
+	</div>
+	<div class="form-group">
+		<label for="editor">文章内容</label>
+		<textarea id="editor" name="content" class="form-control" rows="30">{{ article.content }}</textarea>
+	</div>
+	<button type="submit" class="btn btn-default">发布</button>
+</form>
+{% endblock %}
+
+{% block script %}
+{{ super() }}
+<script type="text/javascript" src=" {{ url_for('static', filename='js/wangEditor.min.js') }}"></script>
+<script type="text/javascript">
+	var textarea = document.getElementById('editor');
+	var editor = new wangEditor(textarea);
+	// 生成编辑器
+	editor.config.uploadImgUrl = '{{ url_for('main.getimage') }}';
+	editor.config.uploadImgFns.onload = function (resultText, xhr) {
+        var originalName = editor.uploadImgOriginalName || '';
+        editor.command(null, 'InsertImage', resultText);
+    };
+	editor.create();
+</script>
+{% endblock %}

@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+
+{% block css %}
+{{ super() }}
+<link href="{{ url_for('static', filename='css/wangEditor.min.css') }}" rel="stylesheet" type="text/css">
+{% endblock %}
+
+{% block main %}
+<div class="col-sm-6 col-sm-offset-3">
+    <div class="commentlist">
+        <div class="comments1">
+            <div class="avatar">
+                <img src="{{ comment.avatar_url }}" alt="头像" class="img-rounded img-responsive">
+            </div>
+            <div class="uinfo">
+                <span><strong>{{ comment.author }}</strong></span>
+            </div>
+            <div class="commentcont">
+                <span>{{ comment.content|safe }}</span>
+            </div>
+            <div class="commentfoot">
+                <span class="pub-time text-muted">{{ comment.created_time }}</span>
+            </div>
+            <hr/>
+            <h4><strong>回复 {{ comment.author }} 的评论</strong></h4>
+            <div class="commentarea">
+                <form method="post">
+                    <textarea id="editor" class="form-control" rows="15" name="reply"></textarea>
+                    <div class="clearfix">
+                        <div class="pull-right">
+                            <div class="sub">
+                                <button class="btn btn-default" type="submit"> 回复 </button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block script %}
+{{ super() }}
+<script type="text/javascript" src=" {{ url_for('static', filename='js/wangEditor.min.js') }}"></script>
+<script type="text/javascript">
+	var textarea = document.getElementById('editor');
+	var editor = new wangEditor(textarea);
+	// 生成编辑器
+	editor.config.uploadImgUrl = '{{ url_for('main.getimage') }}';
+	editor.config.uploadImgFns.onload = function (resultText, xhr) {
+        var originalName = editor.uploadImgOriginalName || '';
+        editor.command(null, 'InsertImage', resultText);
+    };
+    editor.config.menus = [
+		'source',
+		'|',     // '|' 是菜单组的分割线
+		'bold',
+		'underline',
+		'italic',
+		'strikethrough',
+		'eraser',
+		'forecolor',
+		'bgcolor',
+		'|',
+        'quote',
+        'unorderlist',
+        'orderlist',
+        'alignleft',
+        'aligncenter',
+        'alignright',
+        '|',
+        'link',
+        'unlink',
+        'img',
+        'insertcode',
+        'undo',
+        'redo',
+        'fullscreen'
+	];
+	editor.create();
+</script>
+{% endblock %}

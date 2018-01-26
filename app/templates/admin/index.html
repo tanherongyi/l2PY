@@ -1,0 +1,26 @@
+{% extends "admin/base.html" %}
+
+{% block sidebar %}
+<li class="active"><a href="{{ url_for('.index') }}">概况</a></li>
+<li><a href="{{ url_for('.article') }}">文章</a></li>
+<li><a href="{{ url_for('.category') }}">文章分类</a></li>
+<li><a href="{{ url_for('.user') }}">用户</a></li>
+{% endblock %}
+
+{% block main %}
+<h3>信息总览</h3>
+<div class="row placeholders">
+	<div class="col-sm-4 placeholder">
+		<h4>文章</h4>
+		<span class="text-muted">{{ articles }} 篇</span>
+	</div>
+	<div class="col-sm-4 placeholder">
+		<h4>评论</h4>
+		<span class="text-muted">{{ comments }} 条</span>
+	</div>
+	<div class="col-sm-4 placeholder">
+		<h4>已登录用户总数</h4>
+		<span class="text-muted">{{ users }}</span>
+	</div>
+</div>
+{% endblock %}

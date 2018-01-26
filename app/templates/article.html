@@ -1,0 +1,167 @@
+{% extends "base.html" %}
+{% import "_macros.html" as macros %}
+
+{% block css %}
+{{ super() }}
+<link href="{{ url_for('static', filename='css/wangEditor.min.css') }}" rel="stylesheet" type="text/css">
+{% endblock %}
+
+{% block title %}
+<title>{{ article.title }}-L2PY</title>
+{% endblock %}
+
+{% block main %}
+<div class="col-sm-6 col-sm-offset-3">
+	<div class="articlebox">
+		<h2><strong>{{ article.title }}</strong></h2>
+		<p><span class="pub-time text-muted">{{ article.created_time }}</span></p>
+		<div class="acontent">{{ article.content|safe }}</div>
+		<p><strong>更多 Python 相关教程，请访问我的个人博客: <a href="{{ url_for('.index') }}">PYE2</a></strong></p>
+		<div class="clearfix">
+			{% if last %}
+			<div class="pull-left">
+				<a href="{{ url_for('.article', id=last.id) }}"><button type="button" class="btn btn-default"><i class="fa fa-arrow-left"></i> {{ last.title }} </button></a>
+			</div>
+			{% endif %}
+
+			{% if next %}
+			<div class="pull-right">
+				<a href="{{ url_for('.article', id=next.id) }}"><button type="button" class="btn btn-default">{{ next.title }} <i class="fa fa-arrow-right"></i></button></a>
+			</div>
+			{% endif %}
+		</div>
+	</div>
+
+	<div class="commentbox">
+		<div>
+			<h4><strong>{{ times }} 条评论</strong></h4>
+			{% if session.get('login') %}
+			<div class="commentarea">
+				<form method="post">
+					<textarea id="editor" class="form-control" rows="10" name="comment"></textarea>
+					<div class="clearfix">
+						<div class="pull-right">
+							<div class="sub">
+								<button class="btn btn-default" type="submit"> 评论 </button>
+							</div>
+						</div>
+					</div>
+				</form>
+			</div>
+			{% else %}
+			<div class="logintip">
+				<div class="text-muted text-center">
+					<span>登录后回复</span>
+				</div>
+				<div class="text-center">
+					<a href="{{ url_for('.github_login') }}"><i class="fa fa-github fa-3x"></i></a>
+					<a href="#"><i class="fa fa-weibo fa-3x"></i></a>
+				</div>
+			</div>
+			{% endif %}
+		</div>
+		<hr/>
+
+
+		<div class="commentslist" id="comments">
+			{% for comment in comments %}
+			<div class="comments1" id="{{ comment.id }}">
+				<div class="avatar">
+					<img src="{{ comment.avatar_url }}" alt="头像" class="img-rounded img-responsive">
+				</div>
+				<div class="uinfo">
+					<span><strong>{{ comment.author }}</strong></span>
+				</div>
+				<div class="commentcont">
+					{% if comment.status %}
+					<span>{{ comment.content|safe }}</span>
+					{% else %}
+					<span>该评论已被管理员消灭</span>
+					{% endif %}
+				</div>
+				<div class="commentfoot">
+					<span class="pub-time text-muted">{{ comment.created_time }}</span> &bull; <a href="{{ url_for('.reply_comment', id=comment.id) }}"><span class="pub-time text-muted">回复</span></a>
+					{% if session.get('login') %}
+					 &bull;  <a href="{{ url_for('.del_comment', id=comment.id) }}" onClick="if(!confirm('是否确认删除一级评论？删除后二级评论将全部消失！'))return false;"><span class="pub-time text-muted">删除</span></a>
+					{% endif %}
+				</div>
+				<hr/>
+				{% if comment.replys %}
+				{% for each in comment.replys %}
+				<div class="comments2">
+					<div class="avatar1">
+						<img src="{{ each.avatar_url }}" alt="头像" class="img-rounded img-responsive">
+					</div>
+					<div class="uinfo1">
+						<span><strong>{{ each.author }}</strong><span> <i class="fa fa-share"></i> </span><strong>{{ each.to_author }}</strong></span>
+					</div>
+					<div class="commentcont1">
+						{% if each.status %}
+						<span>{{ each.content|safe }}</span>
+						{% else %}
+						<span>该评论已被管理员消灭</span>
+						{% endif %}
+					</div>
+					<div class="commentfoot1">
+						<span class="pub-time text-muted">{{ each.created_time }}</span> &bull; <a href="{{ url_for('.reply_reply', id=each.id) }}"><span class="pub-time text-muted">回复</span></a>
+						{% if session.get('login') %}
+						 &bull;  <a href="{{ url_for('.del_reply', id=each.id) }}" onClick="if(!confirm('是否确认删除二级评论？'))return false;"><span class="pub-time text-muted">删除</span></a>
+						{% endif %}
+					</div>
+					<hr/>
+				</div>
+				{% endfor %}
+				{% endif %}
+			</div>
+			{% endfor %}
+			{% if comments_pagination %}
+			<div class="pagination1">
+				{{ macros.pagination_widget(comments_pagination, idx, id=article.id) }}
+			</div>
+			{% endif %}
+		</div>
+	</div>
+</div>
+{% endblock %}
+
+{% block script %}
+{{ super() }}
+<script type="text/javascript" src=" {{ url_for('static', filename='js/wangEditor.min.js') }}"></script>
+<script type="text/javascript">
+	var textarea = document.getElementById('editor');
+	var editor = new wangEditor(textarea);
+	// 生成编辑器
+	editor.config.uploadImgUrl = '{{ url_for('main.getimage') }}';
+	editor.config.uploadImgFns.onload = function (resultText, xhr) {
+        var originalName = editor.uploadImgOriginalName || '';
+        editor.command(null, 'InsertImage', resultText);
+    };
+    editor.config.menus = [
+		'source',
+		'|',     // '|' 是菜单组的分割线
+		'bold',
+		'underline',
+		'italic',
+		'strikethrough',
+		'eraser',
+		'forecolor',
+		'bgcolor',
+		'|',
+        'quote',
+        'unorderlist',
+        'orderlist',
+        'alignleft',
+        'aligncenter',
+        'alignright',
+        '|',
+        'link',
+        'unlink',
+        'img',
+        'insertcode',
+        'undo',
+        'redo',
+        'fullscreen'
+	];
+	editor.create();
+</script>
+{% endblock %}

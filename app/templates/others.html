@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% import "_macros.html" as macros %}
+
+{% block main %}
+	<div class="col-sm-4 col-sm-offset-3">
+        <div class="infobox">
+			<h4><strong>这里是一些无关紧要的吐槽</strong></h4>
+		</div>
+
+		{% for article in articles %}
+		<div class="contentbox1">
+			<span class="author"><b>Enn</b></span>
+			<span class="pub-time text-muted">{{ article.created_time }}</span>
+			<h4><strong><a href="{{ url_for('.article', id=article.id) }}">{{ article.title }}</a></strong></h4>
+			<p class="abstract">{{ article.abstract|safe }} <a href="{{ url_for('.article', id=article.id) }}"><i class="fa fa-hand-o-right"></i> <strong>阅读全文</strong></a><p>
+			<div class="contentinfo">
+				<a href="{{ url_for('.article', id=article.id ) }}" ><span class="label label-default" style="display: inline-block"><i class="fa fa-eye"></i> 阅读量 {{ article.reading_time }}</span></a>
+				<a href="{{ url_for('.article', id=article.id ) }}#comments" ><span class="label label-default" style="display: inline-block"><i class="fa fa-comments"></i> {{ article.comments_times() }} 评论</span></a>
+			</div>
+		</div>
+		{% endfor %}
+
+		{% if pagination %}
+		<div class="pagination">
+			{{ macros.pagination_widget(pagination, idx) }}
+		</div>
+		{% endif %}
+	</div>
+
+	<div class="col-sm-2">
+		<div class="adbox">
+			<h4><strong>学习交流QQ群</strong></h4>
+			<p>694693688</p>
+		</div>
+
+		<div class="adbox">
+			<h4><strong>Tip</strong></h4>
+			<p>按 <kbd><kbd>Ctrl</kbd> + <kbd>D</kbd></kbd> 键，将<strong>PYE2</strong>加入收藏夹，随时回来查看最新文章<p>
+		</div>
+
+		<div class="Footer">
+			<span> <strong>Enn</strong> &copy 2018 <strong>L2PY</strong></span>
+		</div>
+	</div>
+{% endblock %}
