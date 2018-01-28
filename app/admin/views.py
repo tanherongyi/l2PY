@@ -44,7 +44,7 @@ def article():
 def add_article():
     categorys = Category.query.all()
     if request.method == "POST" and request.form['title'] and request.form['content'] != '':
-        new_article = Article(title=request.form['title'], content=request.form['content'].replace('class=""', 'class="img-responsive"'), abstract=ch_content(request.form['content'])[:137]+'...',
+        new_article = Article(title=request.form['title'], content=request.form['content'].replace('class=""','class="img-responsive center-block"'), abstract=ch_content(request.form['content'])[:137]+'...',
                               category_id=request.form['category'])
         db.session.add(new_article)
         return redirect(url_for('admin.article'))
@@ -57,7 +57,7 @@ def edit_article(id):
     article = Article.query.get_or_404(id)
     if request.method == "POST":
         article.title = request.form['title']
-        article.content = request.form['content'].replace('class=""', 'class="img-responsive"')
+        article.content = request.form['content'].replace('class=""','class="img-responsive center-block"')
         article.abstract = ch_content(request.form['content'])[:137]+'...'
         article.category_id = request.form['category']
         db.session.add(article)
