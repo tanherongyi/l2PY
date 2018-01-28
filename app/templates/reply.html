@@ -40,6 +40,9 @@
 </div>
 {% endblock %}
 
+{% block right %}
+{% endblock %}
+
 {% block script %}
 {{ super() }}
 <script type="text/javascript" src=" {{ url_for('static', filename='js/wangEditor.min.js') }}"></script>

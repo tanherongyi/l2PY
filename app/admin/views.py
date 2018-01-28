@@ -3,6 +3,7 @@ from .. import db
 from ..models import Admin, Article, Category, User, Comment, Reply
 from flask import render_template, redirect, request, url_for, flash
 from flask_login import login_user, logout_user, login_required
+from ..some_func import ch_content
 
 
 @admin.route('/login', methods=['GET', 'POST'])
@@ -43,7 +44,7 @@ def article():
 def add_article():
     categorys = Category.query.all()
     if request.method == "POST" and request.form['title'] and request.form['content'] != '':
-        new_article = Article(title=request.form['title'], content=request.form['content'], abstract=request.form['content'][:137]+'...',
+        new_article = Article(title=request.form['title'], content=request.form['content'], abstract=ch_content(request.form['content'])[:137]+'...',
                               category_id=request.form['category'])
         db.session.add(new_article)
         return redirect(url_for('admin.article'))
@@ -57,7 +58,7 @@ def edit_article(id):
     if request.method == "POST":
         article.title = request.form['title']
         article.content = request.form['content']
-        article.abstract = request.form['content'][:137]+'...'
+        article.abstract = ch_content(request.form['content'])[:137]+'...'
         article.category_id = request.form['category']
         db.session.add(article)
         return redirect(url_for('admin.article'))

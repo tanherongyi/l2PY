@@ -1,5 +1,5 @@
 from flask import current_app, url_for, redirect, request
-import requests
+import requests, re
 
 class OAuthMethod():
     def nomal_path(self):
@@ -91,4 +91,9 @@ class OAuthMethod():
         r.encoding = r.content
         result = r.json()
         return result
+
+def ch_content(content):
+    ch_rule = re.compile(r'<[^>]+>', re.S)
+    ch_content = ch_rule.sub('', content)
+    return ch_content
 

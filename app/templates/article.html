@@ -16,7 +16,13 @@
 		<h2><strong>{{ article.title }}</strong></h2>
 		<p><span class="pub-time text-muted">{{ article.created_time }}</span></p>
 		<div class="acontent">{{ article.content|safe }}</div>
-		<p><strong>更多 Python 相关教程，请访问我的个人博客: <a href="{{ url_for('.index') }}">PYE2</a></strong></p>
+		<p><strong>更多 Python 相关教程，请访问我的个人博客: <a href="{{ url_for('.index') }}">L2PY</a></strong></p>
+		<p><strong>项目开发中遇到问题，通过以下方式获取帮助：</strong></p>
+		<ul>
+			<li>在下方评论区留言</li>
+			<li>加入学习交流QQ群 <strong>694693688</strong> 进行提问</li>
+			<li>将问题的详细描述通过邮件发送至 <strong>94112776@qq.com</strong>，一般会在1天内答复</li>
+		</ul>
 		<div class="clearfix">
 			{% if last %}
 			<div class="pull-left">
@@ -122,6 +128,9 @@
 		</div>
 	</div>
 </div>
+{% endblock %}
+
+{% block right %}
 {% endblock %}
 
 {% block script %}
