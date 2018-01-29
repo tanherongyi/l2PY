@@ -43,7 +43,7 @@ class Category(db.Model):
 class Article(db.Model):
     # __tablename__ 的值作为数据
     __tablename__ = 'articles'
-    __searchable__ = ['content']
+    __searchable__ = ['title', 'content']
     __analyzer__ = ChineseAnalyzer()
     # 文章id，定义primary_key属性为True，表示id为主键
     id = db.Column(db.Integer, primary_key=True)
