@@ -23,6 +23,17 @@
 			<li>加入学习交流QQ群 <strong>694693688</strong> 进行提问</li>
 			<li>将问题的详细描述通过邮件发送至 <strong>94112776@qq.com</strong>，一般会在1天内答复</li>
 		</ul>
+		<div class="paybutton">
+			<button class="btn btn-default" id="dashang">这里是一个隐藏功能，好奇的话请使用正确的打开方式：扫一扫！</button>
+		</div>
+		<div id="payimg">
+			<div class="col-sm-6 payblock">
+				<img src="{{ url_for('static', filename='img/wxpay.jpg') }}" class="img-responsive center-block">
+			</div>
+			<div class="col-sm-6 payblock">
+				<img src="{{ url_for('static', filename='img/alipay.jpg') }}" class="img-responsive center-block">
+			</div>
+		</div>
 		<div class="clearfix">
 			{% if last %}
 			<div class="pull-left">
@@ -172,5 +183,12 @@
         'fullscreen'
 	];
 	editor.create();
+</script>
+<script type="text/javascript">
+	$(document).ready(function() {
+		$("#dashang").click(function() {
+			$("#payimg").slideToggle();
+		});
+	});
 </script>
 {% endblock %}

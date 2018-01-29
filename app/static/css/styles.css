@@ -68,6 +68,12 @@ div.acontent{
 	font-size:16px;
 	word-break:break-all;
 }
+div.paybutton{
+    margin:10px auto;
+}
+div.payblock{
+    margin:auto auto 10px auto;
+}
 div.logintip{
     font-size:16px;
     margin:auto auto auto auto;
