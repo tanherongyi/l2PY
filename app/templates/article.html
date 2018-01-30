@@ -71,7 +71,7 @@
 					<span>登录后回复</span>
 				</div>
 				<div class="text-center">
-					<a href="{{ url_for('.github_login') }}"><i class="fa fa-github fa-3x"></i></a>
+					<a href="{{ url_for('.github_login', return_type='article', return_id=article.id) }}"><i class="fa fa-github fa-3x"></i></a>
 					<a href="{{ url_for('.weibo_login', return_type='article', return_id=article.id) }}"><i class="fa fa-weibo fa-3x"></i></a>
 				</div>
 			</div>
