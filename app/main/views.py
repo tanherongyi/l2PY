@@ -196,7 +196,7 @@ def reply_comment(id):
             db.session.add(reply)
             return redirect(url_for('main.article', id=comment.article_id))
         return render_template('reply.html', comment=comment)
-    return redirect(url_for('main.comment_login', return_type='comment', return_id=id))
+    return redirect(url_for('main.login', return_type='comment', return_id=id))
 
 @main.route('/reply/reply/<int:id>', methods=['GET', 'POST'])
 def reply_reply(id):
@@ -211,7 +211,7 @@ def reply_reply(id):
             db.session.add(reply)
             return redirect(url_for('main.article', id=article_id))
         return render_template('reply.html', comment=comment)
-    return redirect(url_for('main.reply_login', return_type='reply', return_id=id))
+    return redirect(url_for('main.login', return_type='reply', return_id=id))
 
 @main.route('/delete/comment/<int:id>')
 def del_comment(id):
