@@ -82,6 +82,7 @@ class Comment(db.Model):
     __tablename__ = 'comments'
     id = db.Column(db.Integer, primary_key=True)
     author = db.Column(db.String(64), index=True)
+    author_id = db.Column(db.Integer)
     avatar_url = db.Column(db.String(128))
     created_time = db.Column(db.DateTime, index=True, default=datetime.now)
     content = db.Column(db.Text, nullable=False)
@@ -93,6 +94,7 @@ class Reply(db.Model):
     __tablename__ = 'replys'
     id = db.Column(db.Integer, primary_key=True)
     author = db.Column(db.String(64), index=True)
+    author_id = db.Column(db.Integer)
     to_author = db.Column(db.String(64), index=True)
     avatar_url = db.Column(db.String(128))
     created_time = db.Column(db.DateTime, index=True, default=datetime.now)

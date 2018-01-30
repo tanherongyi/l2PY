@@ -4,9 +4,7 @@ from .. import db
 from ..models import Article, Category, User, Comment, Reply
 from flask import render_template, redirect, url_for, request, session, Response, current_app
 from qiniu import Auth, put_file
-from ..some_func import OAuthMethod
-
-oauthmethod = OAuthMethod()
+from ..some_func import oauthmethod
 
 @main.route('/')
 def index():
@@ -16,32 +14,33 @@ def index():
     articles = pagination.items
     return render_template('index.html', articles=articles, pagination=pagination, idx='.index')
 
-#常规登录页面
+#登录页面
 @main.route('/login')
 def login():
+    session['return_id'] = request.args.get('return_id')
+    session['return_type'] = request.args.get('return_type')
     return render_template('login.html')
 
-#回复comment登录页面
-@main.route('/comment/<int:id>/login')
-def comment_login(id):
-    session['comment_id'] = id
-    return render_template('commentlogin.html')
-
-#回复reply登录页面
-@main.route('/reply/<int:id>/login')
-def reply_login(id):
-    session['reply_id'] = id
-    return render_template('replylogin.html')
-
-#常规第三方登录
+#github第三方登录
 @main.route('/github/login')
 def github_login():
-    path = oauthmethod.nomal_path()
+    path = oauthmethod.git_path()
+    if session.get('return_type'):
+        return redirect(path)
+    else:
+        session['return_id'] = request.args.get('return_id')
+        session['return_type'] = request.args.get('return_type')
     return redirect(path)
 
+#github第三方回调地址处理
 @main.route('/github/oauth/callback')
 def github_oauth():
-    result = oauthmethod.nomal_userinfo()
+    # 判断回调地址中是否拿到code
+    if 'code' not in request.args:
+        return redirect(url_for('main.login'))
+    code = request.args.get('code')
+    result = oauthmethod.git_userinfo(code)
+
     username = result['login']
     avatar_url = result['avatar_url'].split('?')[0]
 
@@ -50,58 +49,89 @@ def github_oauth():
     #如果用户已经注册
     if user:
         session['login'] = user.id
+        return_type = session.get('return_type')
+        return_id = session.get('return_id')
+        if return_type:
+            del session['return_type'], session['return_id']
+            if return_type == 'comment':
+                return redirect(url_for('main.reply_comment', id=return_id))
+            elif return_type == 'reply':
+                return redirect(url_for('main.reply_reply', id=return_id))
+            else:
+                return redirect(url_for('main.article', id=return_id))
+        else:
+            return redirect(url_for('main.index'))
+    user = User(username=username, avatar_url=avatar_url, social_type='github')
+    db.session.add(user)
+    session['login'] = User.query.filter_by(username=username).filter_by(social_type='github').first().id
+    return_type = session.get('return_type')
+    return_id = session.get('return_id')
+    if return_type:
+        del session['return_type'], session['return_id']
+        if return_type == 'comment':
+            return redirect(url_for('main.reply_comment', id=return_id))
+        elif return_type == 'reply':
+            return redirect(url_for('main.reply_reply', id=return_id))
+        else:
+            return redirect(url_for('main.article', id=return_id))
+    else:
         return redirect(url_for('main.index'))
-    user = User(username=username, avatar_url=avatar_url, social_type='github')
-    db.session.add(user)
-    return redirect(url_for('main.index'))
 
-#回复comment第三方登录
-@main.route('/comment/github/login/')
-def comment_github_login():
-    path = oauthmethod.comment_path()
+#微博第三方登录
+@main.route('/weibo/login')
+def weibo_login():
+    path = oauthmethod.weibo_path()
+    if session.get('return_type'):
+        return redirect(path)
+    else:
+        session['return_id'] = request.args.get('return_id')
+        session['return_type'] = request.args.get('return_type')
     return redirect(path)
 
-@main.route('/github/oauth/callback1')
-def comment_github_oauth():
-    result = oauthmethod.comment_userinfo()
-    username = result['login']
-    avatar_url = result['avatar_url'].split('?')[0]
+#微博第三方回调地址处理
+@main.route('/weibo/oauth/callback')
+def weibo_oauth():
+    # 判断回调地址中是否拿到code
+    if 'code' not in request.args:
+        return redirect(url_for('main.login'))
+    code = request.args.get('code')
+    result = oauthmethod.weibo_userinfo(code)
 
-    id = session['comment_id']
-    del session['comment_id']
-    #判断用户是否在USER表中是否注册，没有则注册后给到登录SESSION，有则直接给道登录SESSION
-    user = User.query.filter_by(username=username).filter_by(social_type='github').first()
-    #如果用户已经注册
+    username = result['name']
+    avatar_url = result['profile_image_url']
+
+    # 判断用户是否在USER表中是否注册，没有则注册后给到登录SESSION，有则直接给道登录SESSION
+    user = User.query.filter_by(username=username).filter_by(social_type='weibo').first()
+    # 如果用户已经注册
     if user:
         session['login'] = user.id
-        return redirect(url_for('main.reply_comment', id=id))
-    user = User(username=username, avatar_url=avatar_url, social_type='github')
+        return_type = session.get('return_type')
+        return_id = session.get('return_id')
+        if return_type:
+            del session['return_type'], session['return_id']
+            if return_type == 'comment':
+                return redirect(url_for('main.reply_comment', id=return_id))
+            elif return_type == 'reply':
+                return redirect(url_for('main.reply_reply', id=return_id))
+            else:
+                return redirect(url_for('main.article', id=return_id))
+        else:
+            return redirect(url_for('main.index'))
+    user = User(username=username, avatar_url=avatar_url, social_type='weibo')
     db.session.add(user)
-    return redirect(url_for('main.reply_comment', id=id))
-
-#回复reply第三方登录
-@main.route('/reply/github/login')
-def reply_github_login():
-    path = oauthmethod.reply_path()
-    return redirect(path)
-
-@main.route('/github/oauth/callback2')
-def reply_github_oauth():
-    result = oauthmethod.reply_userinfo()
-    username = result['login']
-    avatar_url = result['avatar_url'].split('?')[0]
-
-    id = session['reply_id']
-    del session['reply_id']
-    #判断用户是否在USER表中是否注册，没有则注册后给到登录SESSION，有则直接给道登录SESSION
-    user = User.query.filter_by(username=username).filter_by(social_type='github').first()
-    #如果用户已经注册
-    if user:
-        session['login'] = user.id
-        return redirect(url_for('main.reply_reply', id=id))
-    user = User(username=username, avatar_url=avatar_url, social_type='github')
-    db.session.add(user)
-    return redirect(url_for('main.reply_reply', id=id))
+    session['login'] = User.query.filter_by(username=username).filter_by(social_type='weibo').first().id
+    return_type = session.get('return_type')
+    return_id = session.get('return_id')
+    if return_type:
+        del session['return_type'], session['return_id']
+        if return_type == 'comment':
+            return redirect(url_for('main.reply_comment', id=return_id))
+        elif return_type == 'reply':
+            return redirect(url_for('main.reply_reply', id=return_id))
+        else:
+            return redirect(url_for('main.article', id=return_id))
+    else:
+        return redirect(url_for('main.index'))
 
 @main.route('/logout')
 def logout():
@@ -144,40 +174,44 @@ def article(id):
         comment_page, per_page=10)
     comments = comments_pagination.items
     times = article.comments_times()
+    user_id = session.get('login')
     if request.method == 'POST' and request.form['comment']:
-        user = User.query.filter_by(id=session['login']).first()
-        comment = Comment(author=user.username, avatar_url=user.avatar_url, content=request.form['comment'], article_id=id)
+        user = User.query.filter_by(id=user_id).first()
+        comment = Comment(author=user.username, author_id=user_id, avatar_url=user.avatar_url,
+                          content=request.form['comment'], article_id=id)
         db.session.add(comment)
         return redirect(url_for('main.article', id=id))
     return render_template('article.html', article=article, last=last, next=next, comments=comments,  times=times,
-                           comments_pagination=comments_pagination, idx='.article')
+                           comments_pagination=comments_pagination, idx='.article', user_id=user_id)
 
 @main.route('/reply/comment/<int:id>', methods=['GET', 'POST'])
 def reply_comment(id):
     if session.get('login'):
         comment = Comment.query.get_or_404(id)
+        user_id = session.get('login')
         if request.method == 'POST' and request.form['reply']:
-            user = User.query.filter_by(id=session['login']).first()
-            reply = Reply(author=user.username, to_author=comment.author, avatar_url=user.avatar_url,
-                            content=request.form['reply'], comment_id=comment.id)
+            user = User.query.filter_by(id=user_id).first()
+            reply = Reply(author=user.username, author_id=user_id, to_author=comment.author, avatar_url=user.avatar_url,
+                          content=request.form['reply'], comment_id=comment.id)
             db.session.add(reply)
             return redirect(url_for('main.article', id=comment.article_id))
         return render_template('reply.html', comment=comment)
-    return redirect(url_for('main.comment_login', id=id))
+    return redirect(url_for('main.comment_login', return_type='comment', return_id=id))
 
 @main.route('/reply/reply/<int:id>', methods=['GET', 'POST'])
 def reply_reply(id):
     if session.get('login'):
         comment = Reply.query.get_or_404(id)
+        user_id = session.get('login')
         if request.method == 'POST' and request.form['reply']:
             article_id = Comment.query.filter_by(id=comment.comment_id).first().article_id
-            user = User.query.filter_by(id=session['login']).first()
-            reply = Reply(author=user.username, to_author=comment.author, avatar_url=user.avatar_url,
-                            content=request.form['reply'], comment_id=comment.comment_id)
+            user = User.query.filter_by(id=user_id).first()
+            reply = Reply(author=user.username, author_id=user_id, to_author=comment.author, avatar_url=user.avatar_url,
+                          content=request.form['reply'], comment_id=comment.comment_id)
             db.session.add(reply)
             return redirect(url_for('main.article', id=article_id))
         return render_template('reply.html', comment=comment)
-    return redirect(url_for('main.reply_login', id=id))
+    return redirect(url_for('main.reply_login', return_type='reply', return_id=id))
 
 @main.route('/delete/comment/<int:id>')
 def del_comment(id):

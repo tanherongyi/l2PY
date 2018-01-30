@@ -72,7 +72,7 @@
 				</div>
 				<div class="text-center">
 					<a href="{{ url_for('.github_login') }}"><i class="fa fa-github fa-3x"></i></a>
-					<a href="#"><i class="fa fa-weibo fa-3x"></i></a>
+					<a href="{{ url_for('.weibo_login', return_type='article', return_id=article.id) }}"><i class="fa fa-weibo fa-3x"></i></a>
 				</div>
 			</div>
 			{% endif %}
@@ -98,7 +98,7 @@
 				</div>
 				<div class="commentfoot">
 					<span class="pub-time text-muted">{{ comment.created_time }}</span> &bull; <a href="{{ url_for('.reply_comment', id=comment.id) }}"><span class="pub-time text-muted">回复</span></a>
-					{% if session.get('login') %}
+					{% if user_id==comment.author_id %}
 					 &bull;  <a href="{{ url_for('.del_comment', id=comment.id) }}" onClick="if(!confirm('是否确认删除一级评论？删除后二级评论将全部消失！'))return false;"><span class="pub-time text-muted">删除</span></a>
 					{% endif %}
 				</div>
@@ -121,7 +121,7 @@
 					</div>
 					<div class="commentfoot1">
 						<span class="pub-time text-muted">{{ each.created_time }}</span> &bull; <a href="{{ url_for('.reply_reply', id=each.id) }}"><span class="pub-time text-muted">回复</span></a>
-						{% if session.get('login') %}
+						{% if user_id==each.author_id %}
 						 &bull;  <a href="{{ url_for('.del_reply', id=each.id) }}" onClick="if(!confirm('是否确认删除二级评论？'))return false;"><span class="pub-time text-muted">删除</span></a>
 						{% endif %}
 					</div>
