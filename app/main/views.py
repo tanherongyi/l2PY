@@ -41,13 +41,28 @@ def github_oauth():
     code = request.args.get('code')
     result = oauthmethod.git_userinfo(code)
 
+    social_id = result['id']
     username = result['login']
     avatar_url = result['avatar_url'].split('?')[0]
 
     #判断用户是否在USER表中是否注册，没有则注册后给到登录SESSION，有则直接给道登录SESSION
-    user = User.query.filter_by(username=username).filter_by(social_type='github').first()
+    user = User.query.filter_by(social_id=social_id).filter_by(social_type='github').first()
     #如果用户已经注册
     if user:
+        # 判断昵称是否有更改
+        if user.username != username:
+            user_comments = Comment.query.filter_by(author_id=user.id).all()
+            user_replys = Reply.query.filter_by(author_id=user.id).all()
+            if user_comments:
+                for each in user_comments:
+                    each.author = username
+                    db.session.add(each)
+            if user_replys:
+                for each in user_replys:
+                    each.author = username
+                    db.session.add(each)
+            user.username = username
+            db.session.add(user)
         session['login'] = user.id
         return_type = session.get('return_type')
         return_id = session.get('return_id')
@@ -61,9 +76,9 @@ def github_oauth():
                 return redirect(url_for('main.article', id=return_id))
         else:
             return redirect(url_for('main.index'))
-    user = User(username=username, avatar_url=avatar_url, social_type='github')
+    user = User(username=username, social_id=social_id, avatar_url=avatar_url, social_type='github')
     db.session.add(user)
-    session['login'] = User.query.filter_by(username=username).filter_by(social_type='github').first().id
+    session['login'] = User.query.filter_by(social_id=social_id).filter_by(social_type='github').first().id
     return_type = session.get('return_type')
     return_id = session.get('return_id')
     if return_type:
@@ -97,13 +112,31 @@ def weibo_oauth():
     code = request.args.get('code')
     result = oauthmethod.weibo_userinfo(code)
 
+    social_id = result['id']
     username = result['name']
     avatar_url = result['profile_image_url']
 
     # 判断用户是否在USER表中是否注册，没有则注册后给到登录SESSION，有则直接给道登录SESSION
-    user = User.query.filter_by(username=username).filter_by(social_type='weibo').first()
+    user = User.query.filter_by(social_id=social_id).filter_by(social_type='weibo').first()
     # 如果用户已经注册
     if user:
+        # 判断昵称和头像是否有更改,此处为粗略判断
+        if user.username != username or user.avatar_url != avatar_url:
+            user_comments = Comment.query.filter_by(author_id=user.id).all()
+            user_replys = Reply.query.filter_by(author_id=user.id).all()
+            if user_comments:
+                for each in user_comments:
+                    each.author = username
+                    each.avatar_url = avatar_url
+                    db.session.add(each)
+            if user_replys:
+                for each in user_replys:
+                    each.author = username
+                    each.avatar_url = avatar_url
+                    db.session.add(each)
+            user.username = username
+            user.avatar_url = avatar_url
+            db.session.add(user)
         session['login'] = user.id
         return_type = session.get('return_type')
         return_id = session.get('return_id')
@@ -117,9 +150,9 @@ def weibo_oauth():
                 return redirect(url_for('main.article', id=return_id))
         else:
             return redirect(url_for('main.index'))
-    user = User(username=username, avatar_url=avatar_url, social_type='weibo')
+    user = User(username=username, social_id=social_id, avatar_url=avatar_url, social_type='weibo')
     db.session.add(user)
-    session['login'] = User.query.filter_by(username=username).filter_by(social_type='weibo').first().id
+    session['login'] = User.query.filter_by(social_id=social_id).filter_by(social_type='weibo').first().id
     return_type = session.get('return_type')
     return_id = session.get('return_id')
     if return_type:
@@ -191,8 +224,9 @@ def reply_comment(id):
         user_id = session.get('login')
         if request.method == 'POST' and request.form['reply']:
             user = User.query.filter_by(id=user_id).first()
-            reply = Reply(author=user.username, author_id=user_id, to_author=comment.author, avatar_url=user.avatar_url,
-                          content=request.form['reply'], comment_id=comment.id)
+            reply = Reply(author=user.username, author_id=user_id, to_author=comment.author,
+                          to_author_id=comment.author_id, avatar_url=user.avatar_url, content=request.form['reply'],
+                          comment_id=comment.id)
             db.session.add(reply)
             return redirect(url_for('main.article', id=comment.article_id))
         return render_template('reply.html', comment=comment)
@@ -201,16 +235,16 @@ def reply_comment(id):
 @main.route('/reply/reply/<int:id>', methods=['GET', 'POST'])
 def reply_reply(id):
     if session.get('login'):
-        comment = Reply.query.get_or_404(id)
+        reply = Reply.query.get_or_404(id)
         user_id = session.get('login')
         if request.method == 'POST' and request.form['reply']:
-            article_id = Comment.query.filter_by(id=comment.comment_id).first().article_id
+            article_id = Comment.query.filter_by(id=reply.comment_id).first().article_id
             user = User.query.filter_by(id=user_id).first()
-            reply = Reply(author=user.username, author_id=user_id, to_author=comment.author, avatar_url=user.avatar_url,
-                          content=request.form['reply'], comment_id=comment.comment_id)
+            reply = Reply(author=user.username, author_id=user_id, to_author=reply.author, to_author_id=reply.author_id,
+                          avatar_url=user.avatar_url, content=request.form['reply'], comment_id=reply.comment_id)
             db.session.add(reply)
             return redirect(url_for('main.article', id=article_id))
-        return render_template('reply.html', comment=comment)
+        return render_template('reply.html', comment=reply)
     return redirect(url_for('main.login', return_type='reply', return_id=id))
 
 @main.route('/delete/comment/<int:id>')

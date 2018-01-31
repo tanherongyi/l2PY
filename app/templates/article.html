@@ -87,7 +87,7 @@
 					<img src="{{ comment.avatar_url }}" alt="头像" class="img-rounded img-responsive">
 				</div>
 				<div class="uinfo">
-					<span><strong>{{ comment.author }}</strong></span>
+					<span><strong>{{ comment.author }}</strong> {% if comment.author_id==2 %}<span style="color:red">博主</span>{% endif %}</span>
 				</div>
 				<div class="commentcont">
 					{% if comment.status %}
@@ -110,7 +110,7 @@
 						<img src="{{ each.avatar_url }}" alt="头像" class="img-rounded img-responsive">
 					</div>
 					<div class="uinfo1">
-						<span><strong>{{ each.author }}</strong><span> <i class="fa fa-share"></i> </span><strong>{{ each.to_author }}</strong></span>
+						<span><strong>{{ each.author }}</strong> {% if each.author_id==2 %}<span style="color:red">博主</span>{% endif %}<span> <i class="fa fa-share"></i> </span><strong>{{ each.to_author }}</strong> {% if each.to_author_id==2 %}<span style="color:red">博主</span>{% endif %}</span>
 					</div>
 					<div class="commentcont1">
 						{% if each.status %}

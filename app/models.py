@@ -15,6 +15,7 @@ class Admin(UserMixin, db.Model):
 class User(db.Model):
     __tablename__ = 'users'
     id = db.Column(db.Integer, primary_key=True)
+    social_id = db.Column(db.String(20))
     username = db.Column(db.String(64), index=True)
     avatar_url = db.Column(db.String(128))
     social_type = db.Column(db.String(30))
@@ -96,6 +97,7 @@ class Reply(db.Model):
     author = db.Column(db.String(64), index=True)
     author_id = db.Column(db.Integer)
     to_author = db.Column(db.String(64), index=True)
+    to_author_id = db.Column(db.Integer)
     avatar_url = db.Column(db.String(128))
     created_time = db.Column(db.DateTime, index=True, default=datetime.now)
     content = db.Column(db.Text, nullable=False)
