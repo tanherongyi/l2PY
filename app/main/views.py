@@ -186,7 +186,8 @@ def tutorial():
         page, per_page=10)
     articles = pagination.items
     categorys = Category.query.filter(Category.id!=1).all()
-    return render_template('tutorial.html', articles=articles, categorys=categorys, pagination=pagination, idx='.tutorial')
+    return render_template('tutorial.html', articles=articles, categorys=categorys, pagination=pagination,
+                           idx='.tutorial')
 
 @main.route('/tutorial/<int:id>')
 def select_tutorial(id):
@@ -194,7 +195,9 @@ def select_tutorial(id):
     pagination = Article.query.filter(Article.category_id==id).order_by(Article.created_time.desc()).paginate(
         page, per_page=10)
     articles = pagination.items
-    return render_template('index.html', articles=articles, pagination=pagination, idx='.select_tutorial')
+    category = Category.query.filter_by(id=id).first()
+    return render_template('selected_tutorial.html', articles=articles, pagination=pagination, idx='.select_tutorial',
+                           category=category)
 
 @main.route('/article/<int:id>', methods=['GET', 'POST'])
 def article(id):
