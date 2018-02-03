@@ -37,13 +37,13 @@
 		<div class="clearfix">
 			{% if last %}
 			<div class="pull-left">
-				<a href="{{ url_for('.article', id=last.id) }}"><button type="button" class="btn btn-default"><i class="fa fa-arrow-left"></i> {{ last.title }} </button></a>
+				<a href="{{ url_for('.article', id=last.id) }}"><button type="button" class="btn btn-default"><i class="fa fa-arrow-left"></i> 上一篇</button></a>
 			</div>
 			{% endif %}
 
 			{% if next %}
 			<div class="pull-right">
-				<a href="{{ url_for('.article', id=next.id) }}"><button type="button" class="btn btn-default">{{ next.title }} <i class="fa fa-arrow-right"></i></button></a>
+				<a href="{{ url_for('.article', id=next.id) }}"><button type="button" class="btn btn-default">下一篇 <i class="fa fa-arrow-right"></i></button></a>
 			</div>
 			{% endif %}
 		</div>
